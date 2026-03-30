@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>廣東話發音遊戲 | Cantonese Speech Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Noto+Sans+HK:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-main: #FFF8E7;
+  --bg-card: #FFFFFF;
+  --color-kh: #FF6B8A;
+  --color-kh-light: #FFF0F3;
+  --color-w: #4ECDC4;
+  --color-w-light: #E8FBF9;
+  --color-s: #FF9A5C;
+  --color-s-light: #FFF3EC;
+  --color-kw: #A78BFA;
+  --color-kw-light: #F3EEFF;
+  --color-star: #FFD93D;
+  --color-text: #2D1B4E;
+  --color-text-light: #7B6B8D;
+  --color-success: #6BCB77;
+  --shadow-card: 0 8px 24px rgba(45, 27, 78, 0.12);
+  --shadow-pop: 0 12px 32px rgba(45, 27, 78, 0.2);
+  --radius: 24px;
+}
+
+.dark {
+  --bg-main: #1A1030;
+  --bg-card: #2D1F4E;
+  --color-kh-light: #3D1525;
+  --color-w-light: #152D2A;
+  --color-s-light: #3D2515;
+  --color-kw-light: #251540;
+  --color-text: #F0E6FF;
+  --color-text-light: #A99BBF;
+  --shadow-card: 0 8px 24px rgba(0,0,0,0.3);
+  --shadow-pop: 0 12px 32px rgba(0,0,0,0.45);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Noto Sans HK', 'Nunito', sans-serif;
+  background: var(--bg-main);
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,107,138,0.1) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(78,205,196,0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,217,61,0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark body::before {
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,107,138,0.06) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(78,205,196,0.06) 0%, transparent 40%);
+}
+
+/* ========== SCREENS ========== */
+.screen { display: none; position: relative; z-index: 1; min-height: 100vh; padding: 20px; }
+.screen.active { display: flex; flex-direction: column; align-items: center; }
+
+/* ========== WELCOME SCREEN ========== */
+#welcome { justify-content: center; gap: 24px; text-align: center; }
+
+.welcome-mascot {
+  width: 160px; height: 160px;
+  animation: mascotBounce 2s ease-in-out infinite;
+}
+
+@keyframes mascotBounce {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-12px) rotate(2deg); }
+}
+
+.welcome-title {
+  font-size: 32px; font-weight: 900;
+  background: linear-gradient(135deg, var(--color-kh), #FF9A5C, var(--color-w));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.3;
+}
+
+.welcome-sub {
+  font-size: 16px; color: var(--color-text-light);
+  font-weight: 700; max-width: 300px;
+}
+
+.btn-start {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 18px 40px; border: none; border-radius: 50px;
+  font-size: 22px; font-weight: 900; cursor: pointer;
+  color: #fff; background: linear-gradient(135deg, var(--color-kh), #FF9A5C);
+  box-shadow: 0 8px 20px rgba(255,107,138,0.35);
+  transition: transform 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+  animation: pulseBtn 2.5s ease-in-out infinite;
+}
+
+.btn-start:active {
+  transform: scale(0.95);
+  box-shadow: 0 4px 12px rgba(255,107,138,0.25);
+}
+
+@keyframes pulseBtn {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+.parent-note {
+  font-size: 12px; color: var(--color-text-light);
+  max-width: 320px; line-height: 1.6;
+  background: var(--bg-card); padding: 16px; border-radius: 16px;
+  box-shadow: var(--shadow-card);
+}
+
+/* ========== CATEGORY SCREEN ========== */
+#categories { justify-content: flex-start; gap: 16px; padding-top: 24px; padding-bottom: 24px; min-height: 100vh; }
+
+.cat-title {
+  font-size: 26px; font-weight: 900; text-align: center;
+}
+
+.cat-grid { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
+
+.cat-card {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px; border-radius: var(--radius);
+  background: var(--bg-card); box-shadow: var(--shadow-card);
+  cursor: pointer; border: 3px solid transparent;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.cat-card:active { transform: scale(0.97); }
+.cat-card[data-cat="kh"]:hover, .cat-card[data-cat="kh"]:active { border-color: var(--color-kh); }
+.cat-card[data-cat="w"]:hover, .cat-card[data-cat="w"]:active { border-color: var(--color-w); }
+.cat-card[data-cat="s"]:hover, .cat-card[data-cat="s"]:active { border-color: var(--color-s); }
+.cat-card[data-cat="kw"]:hover, .cat-card[data-cat="kw"]:active { border-color: var(--color-kw); }
+
+.cat-icon {
+  width: 60px; height: 60px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+}
+
+.cat-card[data-cat="kh"] .cat-icon { background: var(--color-kh-light); }
+.cat-card[data-cat="w"] .cat-icon { background: var(--color-w-light); }
+.cat-card[data-cat="s"] .cat-icon { background: var(--color-s-light); }
+.cat-card[data-cat="kw"] .cat-icon { background: var(--color-kw-light); }
+
+.cat-info h3 { font-size: 20px; font-weight: 900; }
+.cat-info p { font-size: 13px; color: var(--color-text-light); font-weight: 700; }
+
+.cat-stars {
+  margin-left: auto; display: flex; gap: 2px; font-size: 16px;
+}
+
+/* ========== GAME SCREEN ========== */
+#game { gap: 16px; padding-top: 12px; }
+
+.game-header {
+  width: 100%; max-width: 400px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.btn-back {
+  width: 44px; height: 44px; border-radius: 14px;
+  background: var(--bg-card); border: none;
+  box-shadow: var(--shadow-card); cursor: pointer;
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s;
+}
+.btn-back:active { transform: scale(0.9); }
+
+.game-progress {
+  display: flex; gap: 6px; align-items: center;
+}
+
+.progress-dot {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--bg-card); box-shadow: inset 0 0 0 2px var(--color-text-light);
+  transition: all 0.4s;
+}
+
+.progress-dot.done { background: var(--color-star); box-shadow: 0 2px 8px rgba(255,217,61,0.5); }
+.progress-dot.current { transform: scale(1.3); box-shadow: inset 0 0 0 3px var(--color-kh); }
+.progress-dot.current-w { box-shadow: inset 0 0 0 3px var(--color-w); }
+.progress-dot.current-s { box-shadow: inset 0 0 0 3px var(--color-s); }
+.progress-dot.current-kw { box-shadow: inset 0 0 0 3px var(--color-kw); }
+
+.star-count {
+  font-size: 18px; font-weight: 900;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Card area */
+.card-area {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  width: 100%; max-width: 400px;
+}
+
+.word-card {
+  width: 100%; max-width: 320px; aspect-ratio: 3/4;
+  background: var(--bg-card); border-radius: 28px;
+  box-shadow: var(--shadow-pop);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; cursor: pointer;
+  transition: transform 0.3s;
+  position: relative; overflow: hidden;
+}
+
+.word-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 6px; border-radius: 28px 28px 0 0;
+}
+
+.word-card.kh-card::before { background: linear-gradient(90deg, var(--color-kh), #FF9A5C); }
+.word-card.w-card::before { background: linear-gradient(90deg, var(--color-w), #45B7AA); }
+.word-card.s-card::before { background: linear-gradient(90deg, var(--color-s), #FFD93D); }
+.word-card.kw-card::before { background: linear-gradient(90deg, var(--color-kw), #C4B5FD); }
+
+.word-card:active { transform: scale(0.97); }
+
+.card-illustration {
+  width: 140px; height: 140px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.card-character {
+  font-size: 80px; font-weight: 900;
+  line-height: 1;
+}
+
+.kh-card .card-character { color: var(--color-kh); }
+.w-card .card-character { color: var(--color-w); }
+.s-card .card-character { color: var(--color-s); }
+.kw-card .card-character { color: var(--color-kw); }
+
+.card-jyutping {
+  font-family: 'Nunito', sans-serif;
+  font-size: 22px; font-weight: 800;
+  color: var(--color-text-light);
+}
+
+.card-meaning {
+  font-size: 14px; font-weight: 700;
+  color: var(--color-text-light);
+  text-align: center;
+}
+
+.card-prompt {
+  font-size: 18px; font-weight: 800;
+  padding: 10px 28px; border-radius: 50px;
+  animation: promptPulse 1.5s ease-in-out infinite;
+}
+
+.kh-card .card-prompt { background: var(--color-kh-light); color: var(--color-kh); }
+.w-card .card-prompt { background: var(--color-w-light); color: var(--color-w); }
+.s-card .card-prompt { background: var(--color-s-light); color: var(--color-s); }
+.kw-card .card-prompt { background: var(--color-kw-light); color: var(--color-kw); }
+
+@keyframes promptPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Action buttons */
+.card-actions {
+  width: 100%; max-width: 320px;
+  display: flex; gap: 12px; justify-content: center;
+  padding-bottom: 20px;
+}
+
+.btn-action {
+  flex: 1; padding: 16px; border: none; border-radius: 18px;
+  font-size: 17px; font-weight: 800; cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-action:active { transform: scale(0.95); }
+
+.btn-listen {
+  background: var(--bg-card); color: var(--color-text);
+  box-shadow: var(--shadow-card);
+}
+
+.btn-done {
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(107,203,119,0.35);
+  background: linear-gradient(135deg, var(--color-success), #4CAF50);
+}
+
+.btn-repeat {
+  background: var(--bg-card); color: var(--color-text);
+  box-shadow: var(--shadow-card);
+}
+
+/* ========== CELEBRATION ========== */
+#celebration { justify-content: center; gap: 24px; text-align: center; }
+
+.celeb-stars {
+  font-size: 48px;
+  animation: celebBounce 0.6s ease-out;
+}
+
+@keyframes celebBounce {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.celeb-title {
+  font-size: 36px; font-weight: 900;
+  background: linear-gradient(135deg, var(--color-star), #FF9A5C, var(--color-kh));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.celeb-message {
+  font-size: 18px; font-weight: 700;
+  color: var(--color-text-light);
+  max-width: 300px;
+}
+
+.btn-again {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 18px 36px; border: none; border-radius: 50px;
+  font-size: 20px; font-weight: 900; cursor: pointer;
+  color: #fff; background: linear-gradient(135deg, var(--color-w), #45B7AA);
+  box-shadow: 0 8px 20px rgba(78,205,196,0.35);
+  font-family: inherit;
+  transition: transform 0.2s;
+}
+
+.btn-again:active { transform: scale(0.95); }
+
+/* ========== FLOATING STARS ========== */
+.floating-star {
+  position: fixed; pointer-events: none; z-index: 100;
+  font-size: 32px;
+  animation: floatUp 1.2s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { opacity: 1; transform: translateY(0) scale(0.5) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(-160px) scale(1.2) rotate(30deg); }
+}
+
+/* ========== CONFETTI ========== */
+.confetti-piece {
+  position: fixed; z-index: 99; pointer-events: none;
+  width: 10px; height: 10px; border-radius: 2px;
+}
+
+@keyframes confettiFall {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(100vh) rotate(720deg); }
+}
+
+/* ========== SOUND WAVE ========== */
+.sound-wave {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; height: 30px;
+}
+
+.sound-bar {
+  width: 5px; border-radius: 3px;
+  animation: soundWave 0.8s ease-in-out infinite;
+}
+
+.kh-card .sound-bar { background: var(--color-kh); }
+.w-card .sound-bar { background: var(--color-w); }
+.s-card .sound-bar { background: var(--color-s); }
+.kw-card .sound-bar { background: var(--color-kw); }
+
+.sound-bar:nth-child(1) { height: 10px; animation-delay: 0s; }
+.sound-bar:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+.sound-bar:nth-child(3) { height: 28px; animation-delay: 0.2s; }
+.sound-bar:nth-child(4) { height: 20px; animation-delay: 0.3s; }
+.sound-bar:nth-child(5) { height: 10px; animation-delay: 0.4s; }
+
+@keyframes soundWave {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.2); }
+}
+
+.sound-wave-hidden .sound-bar { animation: none; transform: scaleY(0.3); opacity: 0.3; }
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 380px) {
+  .welcome-title { font-size: 26px; }
+  .card-character { font-size: 64px; }
+  .word-card { max-width: 280px; }
+  .card-illustration { width: 120px; height: 120px; }
+}
+
+@media (min-height: 800px) {
+  .word-card { max-width: 340px; }
+  .card-illustration { width: 160px; height: 160px; }
+}
+
+/* Tap hint animation */
+.tap-hint {
+  position: absolute; bottom: 20px;
+  font-size: 13px; font-weight: 700; color: var(--color-text-light);
+  animation: tapFade 2s ease-in-out infinite;
+}
+
+@keyframes tapFade {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====== WELCOME SCREEN ====== -->
+<div id="welcome" class="screen active">
+  <svg class="welcome-mascot" viewBox="0 0 160 160">
+    <!-- Cute penguin (企鵝) mascot -->
+    <ellipse cx="80" cy="110" rx="50" ry="45" fill="#2D1B4E"/>
+    <ellipse cx="80" cy="108" rx="35" ry="32" fill="#F0E6FF"/>
+    <circle cx="65" cy="90" r="7" fill="#2D1B4E"/>
+    <circle cx="95" cy="90" r="7" fill="#2D1B4E"/>
+    <circle cx="67" cy="88" r="2.5" fill="#FFF"/>
+    <circle cx="97" cy="88" r="2.5" fill="#FFF"/>
+    <ellipse cx="80" cy="102" rx="8" ry="5" fill="#FF9A5C"/>
+    <ellipse cx="42" cy="110" rx="14" ry="8" fill="#2D1B4E" transform="rotate(-15 42 110)"/>
+    <ellipse cx="118" cy="110" rx="14" ry="8" fill="#2D1B4E" transform="rotate(15 118 110)"/>
+    <ellipse cx="70" cy="152" rx="12" ry="6" fill="#FF9A5C"/>
+    <ellipse cx="90" cy="152" rx="12" ry="6" fill="#FF9A5C"/>
+    <!-- Crown/party hat -->
+    <polygon points="80,30 68,60 92,60" fill="var(--color-star)"/>
+    <circle cx="80" cy="30" r="6" fill="var(--color-kh)"/>
+    <circle cx="72" cy="50" r="3" fill="var(--color-w)"/>
+    <circle cx="88" cy="50" r="3" fill="#FF9A5C"/>
+  </svg>
+
+  <h1 class="welcome-title">廣東話<br>發音遊戲</h1>
+  <p class="welcome-sub">同企鵝仔一齊學講嘢！🎉</p>
+
+  <button class="btn-start" id="btnStart" type="button">
+    開始玩 ▶
+  </button>
+
+  <div class="parent-note">
+    👨‍👩‍👧 <strong>家長提示：</strong>請陪同小朋友一齊玩，鼓勵佢哋跟住讀每個字。按下「聽」可以示範讀音，小朋友試讀完就按「叻叻」畀星星佢哋！
+  </div>
+</div>
+
+<!-- ====== CATEGORY SCREEN ====== -->
+<div id="categories" class="screen">
+  <h2 class="cat-title">揀一組聲音練習</h2>
+
+  <div class="cat-grid">
+    <div class="cat-card" data-cat="kh" id="catKh">
+      <div class="cat-icon">
+        <svg viewBox="0 0 60 60" width="44" height="44">
+          <rect x="18" y="15" width="24" height="32" rx="4" fill="var(--color-kh)"/>
+          <rect x="24" y="10" width="12" height="8" rx="3" fill="var(--color-kh)"/>
+          <circle cx="26" cy="27" r="2.5" fill="#FFF"/>
+          <circle cx="34" cy="27" r="2.5" fill="#FFF"/>
+          <path d="M26 34 Q30 38 34 34" stroke="#FFF" fill="none" stroke-width="2" stroke-linecap="round"/>
+          <rect x="22" y="47" width="6" height="6" rx="2" fill="var(--color-kh)"/>
+          <rect x="32" y="47" width="6" height="6" rx="2" fill="var(--color-kh)"/>
+        </svg>
+      </div>
+      <div class="cat-info">
+        <h3>Kh 聲母</h3>
+        <p>企 茄 旗 奇 琴 橋</p>
+      </div>
+      <div class="cat-stars" id="khStars"></div>
+    </div>
+
+    <div class="cat-card" data-cat="w" id="catW">
+      <div class="cat-icon">
+        <svg viewBox="0 0 60 60" width="44" height="44">
+          <path d="M10 28 Q10 44 30 44 Q50 44 50 28" fill="none" stroke="var(--color-w)" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="22" cy="34" r="2" fill="var(--color-w)"/>
+          <circle cx="38" cy="34" r="2" fill="var(--color-w)"/>
+          <path d="M8 26 Q30 16 52 26" fill="none" stroke="var(--color-w)" stroke-width="3" stroke-linecap="round" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="cat-info">
+        <h3>W 聲母</h3>
+        <p>碗 滑 玩 蛙</p>
+      </div>
+      <div class="cat-stars" id="wStars"></div>
+    </div>
+
+    <div class="cat-card" data-cat="s" id="catS">
+      <div class="cat-icon">
+        <svg viewBox="0 0 60 60" width="44" height="44">
+          <rect x="12" y="8" width="36" height="44" rx="4" fill="var(--color-s)"/>
+          <rect x="18" y="14" width="24" height="6" rx="2" fill="#FFF" opacity="0.7"/>
+          <rect x="18" y="24" width="24" height="3" rx="1" fill="#FFF" opacity="0.4"/>
+          <rect x="18" y="30" width="18" height="3" rx="1" fill="#FFF" opacity="0.4"/>
+          <rect x="18" y="36" width="24" height="3" rx="1" fill="#FFF" opacity="0.4"/>
+          <rect x="18" y="42" width="12" height="3" rx="1" fill="#FFF" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="cat-info">
+        <h3>S 聲母</h3>
+        <p>消 沙 笑 書 星 洗 掃</p>
+      </div>
+      <div class="cat-stars" id="sStars"></div>
+    </div>
+
+    <div class="cat-card" data-cat="kw" id="catKw">
+      <div class="cat-icon">
+        <svg viewBox="0 0 60 60" width="44" height="44">
+          <ellipse cx="30" cy="32" rx="22" ry="18" fill="var(--color-kw)"/>
+          <path d="M18 28 Q30 20 42 28" fill="#C4B5FD"/>
+          <line x1="30" y1="14" x2="30" y2="32" stroke="#8B5CF6" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="22" cy="38" r="3" fill="#FFF" opacity="0.5"/>
+          <circle cx="36" cy="40" r="2" fill="#FFF" opacity="0.4"/>
+        </svg>
+      </div>
+      <div class="cat-info">
+        <h3>Kw 聲母</h3>
+        <p>西瓜 冬瓜 苦瓜 跨欄</p>
+      </div>
+      <div class="cat-stars" id="kwStars"></div>
+    </div>
+  </div>
+
+  <button class="btn-back" id="btnBackFromCat" type="button" style="margin-top: 16px;">🏠</button>
+</div>
+
+<!-- ====== GAME SCREEN ====== -->
+<div id="game" class="screen">
+  <div class="game-header">
+    <button class="btn-back" id="btnBackFromGame" type="button">◀</button>
+    <div class="game-progress" id="progressDots"></div>
+    <div class="star-count" id="starCount">⭐ 0</div>
+  </div>
+
+  <div class="card-area">
+    <div class="word-card" id="wordCard">
+      <div class="card-illustration" id="cardIllustration"></div>
+      <div class="card-character" id="cardChar"></div>
+      <div class="card-jyutping" id="cardJyutping"></div>
+      <div class="card-meaning" id="cardMeaning"></div>
+      <div class="sound-wave sound-wave-hidden" id="soundWave">
+        <div class="sound-bar"></div>
+        <div class="sound-bar"></div>
+        <div class="sound-bar"></div>
+        <div class="sound-bar"></div>
+        <div class="sound-bar"></div>
+      </div>
+      <div class="card-prompt" id="cardPrompt">👄 跟住讀！</div>
+      <div class="tap-hint" id="tapHint">輕按卡片聽讀音</div>
+    </div>
+  </div>
+
+  <div class="card-actions">
+    <button class="btn-action btn-listen" id="btnListen" type="button">🔊 聽</button>
+    <button class="btn-action btn-done" id="btnDone" type="button">⭐ 叻叻！</button>
+    <button class="btn-action btn-repeat" id="btnRepeat" type="button">🔁 再嚟</button>
+  </div>
+</div>
+
+<!-- ====== CELEBRATION SCREEN ====== -->
+<div id="celebration" class="screen">
+  <div class="celeb-stars" id="celebStarsDisplay"></div>
+  <h2 class="celeb-title" id="celebTitle"></h2>
+  <p class="celeb-message" id="celebMsg"></p>
+  <button class="btn-again" id="btnAgain" type="button">🎮 繼續練習</button>
+</div>
+
+<script>
+/* ============================================
+   CANTONESE SPEECH THERAPY GAME
+   Target sounds: Kh (溪母) and W
+   ============================================ */
+
+// Dark mode detection
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  document.documentElement.classList.add('dark');
+}
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(event) {
+  if (event.matches) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+});
+
+// ============ WORD DATA ============
+var WORDS = {
+  kh: [
+    {
+      char: '企',
+      jyutping: 'kéi5',
+      meaning: '企鵝 (Penguin) 🐧',
+      syllable: 'kéi',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><ellipse cx="70" cy="85" rx="38" ry="42" fill="#2D1B4E"/><ellipse cx="70" cy="83" rx="26" ry="28" fill="#E8E0F0"/><circle cx="58" cy="72" r="5" fill="#2D1B4E"/><circle cx="82" cy="72" r="5" fill="#2D1B4E"/><circle cx="60" cy="70.5" r="2" fill="#FFF"/><circle cx="84" cy="70.5" r="2" fill="#FFF"/><ellipse cx="70" cy="82" rx="6" ry="4" fill="#FF9A5C"/><rect x="58" y="125" width="10" height="8" rx="3" fill="#FF9A5C"/><rect x="72" y="125" width="10" height="8" rx="3" fill="#FF9A5C"/></svg>';
+      }
+    },
+    {
+      char: '茄',
+      jyutping: 'ké4',
+      meaning: '茄子 (Eggplant) 🍆',
+      syllable: 'ké',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><ellipse cx="70" cy="88" rx="28" ry="42" fill="#7B2D8E"/><path d="M60 48 Q70 28 80 48" fill="#4CAF50" stroke="#388E3C" stroke-width="2"/><rect x="67" y="28" width="6" height="18" rx="3" fill="#4CAF50"/><circle cx="58" cy="80" r="4" fill="#9C4DCC" opacity="0.5"/><circle cx="78" cy="95" r="3" fill="#9C4DCC" opacity="0.4"/></svg>';
+      }
+    },
+    {
+      char: '旗',
+      jyutping: 'kèi4',
+      meaning: '旗 (Flag) 🚩',
+      syllable: 'kèi',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><rect x="35" y="25" width="6" height="100" rx="3" fill="#8B7355"/><rect x="41" y="25" width="65" height="45" rx="6" fill="#FF6B8A"/><rect x="41" y="25" width="65" height="15" rx="0" fill="#FF9A5C"/><circle cx="73" cy="52" r="8" fill="#FFD93D"/></svg>';
+      }
+    },
+    {
+      char: '奇',
+      jyutping: 'kèi4',
+      meaning: '奇怪 (Strange) ✨',
+      syllable: 'kèi',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><circle cx="70" cy="70" r="40" fill="#FFD93D" opacity="0.2"/><text x="70" y="82" text-anchor="middle" font-size="50" fill="#FF6B8A">?</text><circle cx="40" cy="40" r="5" fill="#FFD93D"/><circle cx="105" cy="50" r="4" fill="#4ECDC4"/><circle cx="95" cy="100" r="6" fill="#FF9A5C"/><polygon points="35,95 38,85 41,95" fill="#FFD93D"/><polygon points="100,35 103,25 106,35" fill="#FF6B8A"/></svg>';
+      }
+    },
+    {
+      char: '琴',
+      jyutping: 'kàm4',
+      meaning: '鋼琴 (Piano) 🎹',
+      syllable: 'kàm',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><rect x="20" y="40" width="100" height="65" rx="8" fill="#2D1B4E"/><rect x="28" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="42" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="56" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="70" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="84" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="98" y="48" width="10" height="40" rx="2" fill="#FFF"/><rect x="35" y="48" width="7" height="25" rx="1" fill="#2D1B4E"/><rect x="49" y="48" width="7" height="25" rx="1" fill="#2D1B4E"/><rect x="77" y="48" width="7" height="25" rx="1" fill="#2D1B4E"/><rect x="91" y="48" width="7" height="25" rx="1" fill="#2D1B4E"/><text x="70" y="120" text-anchor="middle" font-size="16" fill="#FF9A5C" font-weight="bold">♪ ♫</text></svg>';
+      }
+    },
+    {
+      char: '橋',
+      jyutping: 'kìu4',
+      meaning: '橋 (Bridge) 🌉',
+      syllable: 'kìu',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><path d="M10 90 Q70 40 130 90" fill="none" stroke="#8B7355" stroke-width="8" stroke-linecap="round"/><rect x="25" y="88" width="8" height="25" rx="2" fill="#8B7355"/><rect x="107" y="88" width="8" height="25" rx="2" fill="#8B7355"/><rect x="65" y="65" width="8" height="25" rx="2" fill="#8B7355"/><path d="M0 95 L140 95" stroke="#4ECDC4" stroke-width="3" opacity="0.4"/><path d="M0 102 Q35 98 70 102 Q105 106 140 102" fill="#4ECDC4" opacity="0.25"/></svg>';
+      }
+    }
+  ],
+  w: [
+    {
+      char: '碗',
+      jyutping: 'wún2',
+      meaning: '碗 (Bowl) 🥣',
+      syllable: 'wún',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140"><path d="M25 55 Q25 100 70 100 Q115 100 115 55" fill="#FF9A5C"/><path d="M25 55 L115 55" stroke="#E8854A" stroke-width="3"/><ellipse cx="70" cy="55" rx="45" ry="10" fill="#FFB87A"/><circle cx="55" cy="70" r="5" fill="#FFF" opacity="0.5"/><circle cx="80" cy="78" r="4" fill="#FFF" opacity="0.4"/><circle cx="65" cy="85" r="3" fill="#FFF" opacity="0.35"/><path d="M55 105 Q70 118 85 105" fill="none" stroke="#E8854A" stroke-width="4" stroke-linecap="round"/></svg>';
+      }
+    },
+    {
+      char: '滑',
+      jyutping: 'waaht6',
+      meaning: '滑梯 (Slide) 🛝',
+      syllable: 'waaht',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E0F7FA" opacity="0.45"/>' +
+          '<rect x="98" y="18" width="10" height="100" rx="4" fill="#00897B"/>' +
+          '<rect x="92" y="14" width="22" height="10" rx="5" fill="#26A69A"/>' +
+          '<path d="M22 120 Q48 116 102 38" fill="none" stroke="#26A69A" stroke-width="12" stroke-linecap="round"/>' +
+          '<path d="M22 120 Q48 116 102 38" fill="none" stroke="#4ECDC4" stroke-width="8" stroke-linecap="round"/>' +
+          '<line x1="60" y1="108" x2="60" y2="125" stroke="#00897B" stroke-width="5" stroke-linecap="round"/>' +
+          '<circle cx="62" cy="68" r="9" fill="#FFD93D"/>' +
+          '<circle cx="59" cy="66" r="2" fill="#2D1B4E"/>' +
+          '<circle cx="66" cy="66" r="2" fill="#2D1B4E"/>' +
+          '<path d="M59 73 Q62.5 77 66 73" stroke="#FF6B8A" fill="none" stroke-width="2" stroke-linecap="round"/>' +
+          '<line x1="55" y1="74" x2="48" y2="80" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>' +
+          '<line x1="69" y1="74" x2="76" y2="80" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>' +
+          '<rect x="57" y="76" width="10" height="12" rx="3" fill="#FF6B8A"/>' +
+          '<line x1="60" y1="88" x2="56" y2="98" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>' +
+          '<line x1="64" y1="88" x2="68" y2="98" stroke="#FFD93D" stroke-width="3" stroke-linecap="round"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '玩',
+      jyutping: 'wáan2',
+      meaning: '玩 (Play) 🧒',
+      syllable: 'wáan',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#FFF8E1" opacity="0.45"/>' +
+          '<circle cx="70" cy="38" r="16" fill="#FFD93D"/>' +
+          '<circle cx="64" cy="35" r="2.5" fill="#2D1B4E"/>' +
+          '<circle cx="76" cy="35" r="2.5" fill="#2D1B4E"/>' +
+          '<path d="M64 43 Q70 49 76 43" stroke="#FF6B8A" fill="none" stroke-width="2.5" stroke-linecap="round"/>' +
+          '<rect x="62" y="54" width="16" height="24" rx="6" fill="#42A5F5"/>' +
+          '<line x1="62" y1="62" x2="44" y2="50" stroke="#FFD93D" stroke-width="5" stroke-linecap="round"/>' +
+          '<line x1="78" y1="62" x2="96" y2="50" stroke="#FFD93D" stroke-width="5" stroke-linecap="round"/>' +
+          '<circle cx="44" cy="48" r="5" fill="#EF5350"/>' +
+          '<circle cx="96" cy="48" r="5" fill="#66BB6A"/>' +
+          '<line x1="66" y1="78" x2="58" y2="100" stroke="#2D1B4E" stroke-width="5" stroke-linecap="round"/>' +
+          '<line x1="74" y1="78" x2="82" y2="100" stroke="#2D1B4E" stroke-width="5" stroke-linecap="round"/>' +
+          '<ellipse cx="56" cy="102" rx="7" ry="4" fill="#FF9A5C"/>' +
+          '<ellipse cx="84" cy="102" rx="7" ry="4" fill="#FF9A5C"/>' +
+          '<circle cx="35" cy="85" r="4" fill="#FFD93D" opacity="0.6"/>' +
+          '<polygon points="100,80 103,72 106,80" fill="#FF6B8A" opacity="0.5"/>' +
+          '<circle cx="105" cy="95" r="3" fill="#4ECDC4" opacity="0.5"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '蛙',
+      jyutping: 'wā1',
+      meaning: '青蛙 (Frog) 🐸',
+      syllable: 'wā',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E8F5E9" opacity="0.45"/>' +
+          '<ellipse cx="70" cy="88" rx="40" ry="30" fill="#66BB6A"/>' +
+          '<ellipse cx="70" cy="92" rx="30" ry="18" fill="#A5D6A7"/>' +
+          '<circle cx="50" cy="58" r="14" fill="#66BB6A"/>' +
+          '<circle cx="90" cy="58" r="14" fill="#66BB6A"/>' +
+          '<circle cx="50" cy="56" r="10" fill="#FFF"/>' +
+          '<circle cx="90" cy="56" r="10" fill="#FFF"/>' +
+          '<circle cx="52" cy="56" r="5" fill="#2D1B4E"/>' +
+          '<circle cx="92" cy="56" r="5" fill="#2D1B4E"/>' +
+          '<circle cx="53.5" cy="54.5" r="2" fill="#FFF"/>' +
+          '<circle cx="93.5" cy="54.5" r="2" fill="#FFF"/>' +
+          '<path d="M58 82 Q70 92 82 82" stroke="#388E3C" fill="none" stroke-width="3" stroke-linecap="round"/>' +
+          '<ellipse cx="55" cy="74" rx="3" ry="1.5" fill="#FF9A5C" opacity="0.6"/>' +
+          '<ellipse cx="85" cy="74" rx="3" ry="1.5" fill="#FF9A5C" opacity="0.6"/>' +
+          '<path d="M30 105 L26 118 L34 115 L30 125 L38 118" fill="#66BB6A"/>' +
+          '<path d="M110 105 L106 118 L114 115 L110 125 L118 118" fill="#66BB6A"/>' +
+          '</svg>';
+      }
+    }
+  ],
+  s: [
+    {
+      char: '消',
+      jyutping: 'siu1',
+      meaning: '消防車 (Fire truck) 🚒',
+      syllable: 'siu',
+      speakText: '消防車',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#FFEBEE" opacity="0.4"/>' +
+          '<rect x="15" y="50" width="110" height="50" rx="8" fill="#EF5350"/>' +
+          '<rect x="15" y="50" width="45" height="50" rx="8" fill="#D32F2F"/>' +
+          '<rect x="22" y="58" width="30" height="22" rx="4" fill="#BBDEFB"/>' +
+          '<rect x="70" y="58" width="48" height="14" rx="3" fill="#FFCDD2"/>' +
+          '<rect x="75" y="76" width="12" height="8" rx="2" fill="#FFF" opacity="0.5"/>' +
+          '<rect x="92" y="76" width="12" height="8" rx="2" fill="#FFF" opacity="0.5"/>' +
+          '<circle cx="38" cy="102" r="11" fill="#424242"/>' +
+          '<circle cx="38" cy="102" r="6" fill="#757575"/>' +
+          '<circle cx="102" cy="102" r="11" fill="#424242"/>' +
+          '<circle cx="102" cy="102" r="6" fill="#757575"/>' +
+          '<rect x="55" y="38" width="30" height="14" rx="4" fill="#FFD93D"/>' +
+          '<circle cx="62" cy="45" r="3" fill="#FFF" opacity="0.8"/>' +
+          '<circle cx="78" cy="45" r="3" fill="#FFF" opacity="0.8"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '沙',
+      jyutping: 'saa1',
+      meaning: '玩沙 (Play sand) 🏖️',
+      syllable: 'saa',
+      speakText: '玩沙',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#FFF8E1" opacity="0.4"/>' +
+          '<path d="M0 95 Q35 85 70 95 Q105 105 140 95 L140 140 L0 140 Z" fill="#FFD54F"/>' +
+          '<path d="M0 105 Q35 95 70 105 Q105 115 140 105 L140 140 L0 140 Z" fill="#FFCA28"/>' +
+          '<path d="M55 95 L70 50 L85 95" fill="#FFB300"/>' +
+          '<rect x="63" y="45" width="14" height="5" rx="2" fill="#EF5350"/>' +
+          '<rect x="55" y="88" width="30" height="8" rx="3" fill="#FFB300"/>' +
+          '<circle cx="35" cy="100" r="5" fill="#FFF" opacity="0.3"/>' +
+          '<circle cx="105" cy="98" r="4" fill="#FFF" opacity="0.3"/>' +
+          '<line x1="100" y1="65" x2="100" y2="95" stroke="#8D6E63" stroke-width="3" stroke-linecap="round"/>' +
+          '<polygon points="100,45 100,70 118,70" fill="#EF5350"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '笑',
+      jyutping: 'siu3',
+      meaning: '笑 (Laugh) 😄',
+      syllable: 'siu',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#FFF9C4" opacity="0.4"/>' +
+          '<circle cx="70" cy="70" r="45" fill="#FFD93D"/>' +
+          '<circle cx="70" cy="70" r="42" fill="#FFEE58"/>' +
+          '<path d="M50 58 Q55 52 60 58" stroke="#5D4037" fill="none" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M80 58 Q85 52 90 58" stroke="#5D4037" fill="none" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M48 78 Q70 100 92 78" stroke="#5D4037" fill="#FFF" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M55 85 Q70 92 85 85" fill="#EF5350" opacity="0.6"/>' +
+          '<ellipse cx="42" cy="72" rx="6" ry="4" fill="#FF8A80" opacity="0.5"/>' +
+          '<ellipse cx="98" cy="72" rx="6" ry="4" fill="#FF8A80" opacity="0.5"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '書',
+      jyutping: 'syu1',
+      meaning: '書 (Book) 📖',
+      syllable: 'syu',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E3F2FD" opacity="0.4"/>' +
+          '<rect x="30" y="30" width="80" height="85" rx="5" fill="#42A5F5"/>' +
+          '<rect x="38" y="30" width="72" height="85" rx="5" fill="#64B5F6"/>' +
+          '<rect x="44" y="36" width="58" height="73" rx="3" fill="#FFF"/>' +
+          '<rect x="50" y="46" width="44" height="4" rx="2" fill="#90CAF9"/>' +
+          '<rect x="50" y="56" width="38" height="4" rx="2" fill="#90CAF9"/>' +
+          '<rect x="50" y="66" width="44" height="4" rx="2" fill="#90CAF9"/>' +
+          '<rect x="50" y="76" width="30" height="4" rx="2" fill="#90CAF9"/>' +
+          '<circle cx="73" cy="96" r="4" fill="#FFD93D"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '星',
+      jyutping: 'sing1',
+      meaning: '星星 (Star) ⭐',
+      syllable: 'sing',
+      speakText: '星星',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#1A237E" opacity="0.15"/>' +
+          '<polygon points="70,15 82,52 120,52 88,74 100,112 70,90 40,112 52,74 20,52 58,52" fill="#FFD93D"/>' +
+          '<polygon points="70,28 78,52 100,52 82,66 90,90 70,76 50,90 58,66 40,52 62,52" fill="#FFEE58"/>' +
+          '<circle cx="65" cy="55" r="3" fill="#FFF" opacity="0.6"/>' +
+          '<circle cx="30" cy="30" r="2" fill="#FFD93D" opacity="0.6"/>' +
+          '<circle cx="110" cy="25" r="2" fill="#FFD93D" opacity="0.5"/>' +
+          '<circle cx="115" cy="100" r="1.5" fill="#FFD93D" opacity="0.4"/>' +
+          '<circle cx="25" cy="105" r="1.5" fill="#FFD93D" opacity="0.4"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '洗',
+      jyutping: 'sai2',
+      meaning: '洗衣機 (Washing machine) 🫧',
+      syllable: 'sai',
+      speakText: '洗衣機',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E0F7FA" opacity="0.4"/>' +
+          '<rect x="25" y="20" width="90" height="105" rx="10" fill="#B0BEC5"/>' +
+          '<rect x="25" y="20" width="90" height="105" rx="10" fill="#CFD8DC"/>' +
+          '<rect x="32" y="26" width="76" height="20" rx="4" fill="#ECEFF1"/>' +
+          '<circle cx="45" cy="36" r="4" fill="#4ECDC4"/>' +
+          '<circle cx="58" cy="36" r="4" fill="#FF6B8A"/>' +
+          '<rect x="80" y="32" width="20" height="8" rx="4" fill="#B0BEC5"/>' +
+          '<circle cx="70" cy="80" r="30" fill="#ECEFF1"/>' +
+          '<circle cx="70" cy="80" r="25" fill="#E3F2FD"/>' +
+          '<circle cx="60" cy="72" r="5" fill="#81D4FA" opacity="0.7"/>' +
+          '<circle cx="78" cy="75" r="4" fill="#81D4FA" opacity="0.6"/>' +
+          '<circle cx="68" cy="88" r="6" fill="#81D4FA" opacity="0.5"/>' +
+          '<circle cx="82" cy="85" r="3" fill="#B3E5FC" opacity="0.6"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '掃',
+      jyutping: 'sou3',
+      meaning: '掃把 (Broom) 🧹',
+      syllable: 'sou',
+      speakText: '掃把',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#FFF3E0" opacity="0.4"/>' +
+          '<line x1="70" y1="10" x2="70" y2="80" stroke="#8D6E63" stroke-width="6" stroke-linecap="round"/>' +
+          '<path d="M45 78 L70 78 L95 78 L90 130 L50 130 Z" fill="#FFB74D"/>' +
+          '<line x1="52" y1="82" x2="50" y2="126" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="58" y1="82" x2="56" y2="128" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="64" y1="82" x2="63" y2="128" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="70" y1="82" x2="70" y2="128" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="76" y1="82" x2="77" y2="128" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="82" y1="82" x2="84" y2="128" stroke="#FF9800" stroke-width="2"/>' +
+          '<line x1="88" y1="82" x2="90" y2="126" stroke="#FF9800" stroke-width="2"/>' +
+          '<rect x="45" y="74" width="50" height="8" rx="3" fill="#A1887F"/>' +
+          '</svg>';
+      }
+    }
+  ],
+  kw: [
+    {
+      char: '瓜',
+      jyutping: 'gwaa1',
+      meaning: '西瓜 (Watermelon) 🍉',
+      syllable: 'gwaa',
+      speakText: '西瓜',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E8F5E9" opacity="0.4"/>' +
+          '<path d="M20 90 Q70 10 120 90 Z" fill="#4CAF50"/>' +
+          '<path d="M25 90 Q70 18 115 90 Z" fill="#EF5350"/>' +
+          '<path d="M30 90 Q70 26 110 90 Z" fill="#E53935"/>' +
+          '<circle cx="55" cy="65" r="3" fill="#2D1B4E"/>' +
+          '<circle cx="70" cy="55" r="3" fill="#2D1B4E"/>' +
+          '<circle cx="85" cy="65" r="3" fill="#2D1B4E"/>' +
+          '<circle cx="62" cy="78" r="2.5" fill="#2D1B4E"/>' +
+          '<circle cx="78" cy="78" r="2.5" fill="#2D1B4E"/>' +
+          '<path d="M20 90 L120 90" stroke="#388E3C" stroke-width="4" stroke-linecap="round"/>' +
+          '<path d="M20 90 Q70 98 120 90" fill="#388E3C"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '瓜',
+      jyutping: 'gwaa1',
+      meaning: '冬瓜 (Winter melon) 🥒',
+      syllable: 'gwaa',
+      speakText: '冬瓜',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#F1F8E9" opacity="0.4"/>' +
+          '<ellipse cx="70" cy="75" rx="45" ry="35" fill="#8BC34A"/>' +
+          '<ellipse cx="70" cy="75" rx="42" ry="32" fill="#9CCC65"/>' +
+          '<path d="M40 60 Q70 50 100 60" fill="none" stroke="#7CB342" stroke-width="2" opacity="0.6"/>' +
+          '<path d="M35 75 Q70 65 105 75" fill="none" stroke="#7CB342" stroke-width="2" opacity="0.5"/>' +
+          '<path d="M40 88 Q70 80 100 88" fill="none" stroke="#7CB342" stroke-width="2" opacity="0.4"/>' +
+          '<ellipse cx="70" cy="75" rx="12" ry="8" fill="#C5E1A5" opacity="0.3"/>' +
+          '<path d="M67 42 Q70 30 73 42" fill="none" stroke="#558B2F" stroke-width="2" stroke-linecap="round"/>' +
+          '<ellipse cx="70" cy="43" rx="6" ry="3" fill="#689F38"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '瓜',
+      jyutping: 'gwaa1',
+      meaning: '苦瓜 (Bitter gourd) 🥬',
+      syllable: 'gwaa',
+      speakText: '苦瓜',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#F1F8E9" opacity="0.4"/>' +
+          '<path d="M45 30 Q30 70 45 110 Q55 120 65 110 Q80 70 65 30 Q55 20 45 30" fill="#66BB6A"/>' +
+          '<path d="M75 30 Q60 70 75 110 Q85 120 95 110 Q110 70 95 30 Q85 20 75 30" fill="#4CAF50"/>' +
+          '<circle cx="52" cy="50" r="5" fill="#81C784" opacity="0.6"/>' +
+          '<circle cx="55" cy="72" r="6" fill="#81C784" opacity="0.5"/>' +
+          '<circle cx="50" cy="92" r="4" fill="#81C784" opacity="0.6"/>' +
+          '<circle cx="82" cy="48" r="5" fill="#66BB6A" opacity="0.5"/>' +
+          '<circle cx="85" cy="70" r="6" fill="#66BB6A" opacity="0.4"/>' +
+          '<circle cx="80" cy="95" r="4" fill="#66BB6A" opacity="0.5"/>' +
+          '<path d="M58 25 Q62 15 66 25" fill="none" stroke="#388E3C" stroke-width="2" stroke-linecap="round"/>' +
+          '<path d="M88 25 Q92 15 96 25" fill="none" stroke="#2E7D32" stroke-width="2" stroke-linecap="round"/>' +
+          '</svg>';
+      }
+    },
+    {
+      char: '跨',
+      jyutping: 'kwaa3',
+      meaning: '跨欄 (Hurdle jump) 🏃',
+      syllable: 'kwaa',
+      speakText: '跨欄',
+      svgIcon: function() {
+        return '<svg viewBox="0 0 140 140">' +
+          '<rect x="0" y="0" width="140" height="140" rx="12" fill="#E8EAF6" opacity="0.4"/>' +
+          '<rect x="75" y="60" width="4" height="55" rx="2" fill="#FF9800"/>' +
+          '<rect x="105" y="60" width="4" height="55" rx="2" fill="#FF9800"/>' +
+          '<rect x="75" y="60" width="34" height="6" rx="2" fill="#F44336"/>' +
+          '<rect x="75" y="74" width="34" height="4" rx="1" fill="#FFCDD2"/>' +
+          '<circle cx="45" cy="38" r="10" fill="#FFD93D"/>' +
+          '<circle cx="42" cy="36" r="2" fill="#2D1B4E"/>' +
+          '<circle cx="49" cy="36" r="2" fill="#2D1B4E"/>' +
+          '<path d="M42 42 Q45 46 49 42" stroke="#FF6B8A" fill="none" stroke-width="2" stroke-linecap="round"/>' +
+          '<rect x="39" y="48" width="12" height="18" rx="5" fill="#42A5F5"/>' +
+          '<line x1="39" y1="56" x2="28" y2="48" stroke="#FFD93D" stroke-width="4" stroke-linecap="round"/>' +
+          '<line x1="51" y1="56" x2="65" y2="45" stroke="#FFD93D" stroke-width="4" stroke-linecap="round"/>' +
+          '<line x1="42" y1="66" x2="30" y2="88" stroke="#2D1B4E" stroke-width="4" stroke-linecap="round"/>' +
+          '<line x1="48" y1="66" x2="68" y2="55" stroke="#2D1B4E" stroke-width="4" stroke-linecap="round"/>' +
+          '<ellipse cx="28" cy="90" rx="6" ry="4" fill="#FF9A5C"/>' +
+          '</svg>';
+      }
+    }
+  ]
+};
+
+// ============ GAME STATE ============
+var state = {
+  currentCategory: null,
+  currentIndex: 0,
+  stars: { kh: 0, w: 0, s: 0, kw: 0 },
+  completedWords: { kh: [], w: [], s: [], kw: [] },
+  wordOrder: [],
+  isSpeaking: false
+};
+
+// ============ AUDIO (Web Audio API) ============
+var audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+function playTone(freq, duration, type) {
+  try {
+    var ctx = getAudioCtx();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (duration || 0.3));
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + (duration || 0.3));
+  } catch (e) {
+    // Audio not available
+  }
+}
+
+function playHappySound() {
+  playTone(523, 0.12, 'sine');
+  setTimeout(function() { playTone(659, 0.12, 'sine'); }, 120);
+  setTimeout(function() { playTone(784, 0.2, 'sine'); }, 240);
+}
+
+function playCelebSound() {
+  var notes = [523, 587, 659, 784, 880, 1047];
+  notes.forEach(function(n, i) {
+    setTimeout(function() { playTone(n, 0.15, 'sine'); }, i * 100);
+  });
+}
+
+function playTapSound() {
+  playTone(440, 0.08, 'triangle');
+}
+
+// ============ SPEECH SYNTHESIS ============
+function speakCantonese(text) {
+  if (state.isSpeaking) return;
+  state.isSpeaking = true;
+
+  var wave = document.getElementById('soundWave');
+  if (wave) wave.classList.remove('sound-wave-hidden');
+
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'zh-HK';
+    utter.rate = 0.7;
+    utter.pitch = 1.1;
+
+    // Try to find Cantonese voice
+    var voices = window.speechSynthesis.getVoices();
+    for (var i = 0; i < voices.length; i++) {
+      if (voices[i].lang === 'zh-HK' || voices[i].lang.indexOf('yue') !== -1) {
+        utter.voice = voices[i];
+        break;
+      }
+    }
+
+    utter.onend = function() {
+      state.isSpeaking = false;
+      if (wave) wave.classList.add('sound-wave-hidden');
+    };
+
+    utter.onerror = function() {
+      state.isSpeaking = false;
+      if (wave) wave.classList.add('sound-wave-hidden');
+    };
+
+    window.speechSynthesis.speak(utter);
+
+    // Fallback timeout
+    setTimeout(function() {
+      state.isSpeaking = false;
+      if (wave) wave.classList.add('sound-wave-hidden');
+    }, 3000);
+  } else {
+    setTimeout(function() {
+      state.isSpeaking = false;
+      if (wave) wave.classList.add('sound-wave-hidden');
+    }, 500);
+  }
+}
+
+// Load voices
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = function() {
+    window.speechSynthesis.getVoices();
+  };
+}
+
+// ============ SCREEN NAVIGATION ============
+function showScreen(screenId) {
+  var screens = document.querySelectorAll('.screen');
+  for (var i = 0; i < screens.length; i++) {
+    screens[i].classList.remove('active');
+  }
+  document.getElementById(screenId).classList.add('active');
+}
+
+// ============ STAR DISPLAY ============
+function updateCategoryStars() {
+  var cats = ['kh', 'w', 's', 'kw'];
+  var ids = ['khStars', 'wStars', 'sStars', 'kwStars'];
+  for (var c = 0; c < cats.length; c++) {
+    var el = document.getElementById(ids[c]);
+    var total = WORDS[cats[c]].length;
+    var html = '';
+    for (var i = 0; i < total; i++) {
+      html += i < state.stars[cats[c]] ? '⭐' : '☆';
+    }
+    el.textContent = html;
+  }
+}
+
+// ============ FLOATING STAR EFFECT ============
+function spawnFloatingStar(x, y) {
+  var star = document.createElement('div');
+  star.className = 'floating-star';
+  star.textContent = '⭐';
+  star.style.left = x + 'px';
+  star.style.top = y + 'px';
+  document.body.appendChild(star);
+  setTimeout(function() { star.remove(); }, 1200);
+}
+
+// ============ CONFETTI ============
+function spawnConfetti() {
+  var colors = ['#FF6B8A', '#4ECDC4', '#FFD93D', '#FF9A5C', '#6BCB77', '#A78BFA'];
+  for (var i = 0; i < 40; i++) {
+    (function(index) {
+      setTimeout(function() {
+        var piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = (Math.random() * 100) + 'vw';
+        piece.style.top = '-10px';
+        piece.style.background = colors[index % colors.length];
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        piece.style.animation = 'confettiFall ' + (1.5 + Math.random() * 2) + 's ease-out forwards';
+        piece.style.animationDelay = (Math.random() * 0.3) + 's';
+        document.body.appendChild(piece);
+        setTimeout(function() { piece.remove(); }, 4000);
+      }, index * 30);
+    })(i);
+  }
+}
+
+// ============ SHUFFLE ARRAY ============
+function shuffleArray(arr) {
+  var shuffled = arr.slice();
+  for (var i = shuffled.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = shuffled[i];
+    shuffled[i] = shuffled[j];
+    shuffled[j] = temp;
+  }
+  return shuffled;
+}
+
+// ============ START GAME FOR CATEGORY ============
+function startCategory(cat) {
+  state.currentCategory = cat;
+  state.currentIndex = 0;
+  state.wordOrder = shuffleArray(WORDS[cat].map(function(_, i) { return i; }));
+
+  var card = document.getElementById('wordCard');
+  card.className = 'word-card ' + cat + '-card';
+
+  updateProgressDots();
+  showCurrentWord();
+  showScreen('game');
+}
+
+// ============ PROGRESS DOTS ============
+function updateProgressDots() {
+  var container = document.getElementById('progressDots');
+  var total = state.wordOrder.length;
+  var html = '';
+  for (var i = 0; i < total; i++) {
+    var cls = 'progress-dot';
+    if (i < state.currentIndex) cls += ' done';
+    if (i === state.currentIndex) {
+      cls += ' current';
+      if (state.currentCategory !== 'kh') cls += ' current-' + state.currentCategory;
+    }
+    html += '<div class="' + cls + '"></div>';
+  }
+  container.innerHTML = html;
+
+  document.getElementById('starCount').textContent = '⭐ ' + state.stars[state.currentCategory];
+}
+
+// ============ SHOW CURRENT WORD ============
+function showCurrentWord() {
+  if (state.currentIndex >= state.wordOrder.length) {
+    showCelebration();
+    return;
+  }
+
+  var wordIdx = state.wordOrder[state.currentIndex];
+  var word = WORDS[state.currentCategory][wordIdx];
+
+  document.getElementById('cardIllustration').innerHTML = word.svgIcon();
+  document.getElementById('cardChar').textContent = word.char;
+  document.getElementById('cardJyutping').textContent = word.jyutping;
+  document.getElementById('cardMeaning').textContent = word.meaning;
+  document.getElementById('cardPrompt').textContent = '👄 跟住讀！';
+  document.getElementById('tapHint').textContent = '輕按卡片聽讀音';
+
+  // Animate in
+  var card = document.getElementById('wordCard');
+  card.style.transform = 'scale(0.9) translateY(20px)';
+  card.style.opacity = '0';
+  setTimeout(function() {
+    card.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s';
+    card.style.transform = 'scale(1) translateY(0)';
+    card.style.opacity = '1';
+  }, 50);
+
+  updateProgressDots();
+}
+
+// ============ MARK WORD DONE ============
+function markCurrentDone(event) {
+  playHappySound();
+
+  var cat = state.currentCategory;
+  var wordIdx = state.wordOrder[state.currentIndex];
+
+  if (state.completedWords[cat].indexOf(wordIdx) === -1) {
+    state.completedWords[cat].push(wordIdx);
+    state.stars[cat]++;
+  }
+
+  // Spawn stars
+  var rect;
+  if (event) {
+    rect = { x: event.clientX || event.touches && event.touches[0] && event.touches[0].clientX || window.innerWidth / 2,
+             y: event.clientY || event.touches && event.touches[0] && event.touches[0].clientY || window.innerHeight / 2 };
+  } else {
+    rect = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+  }
+  for (var i = 0; i < 3; i++) {
+    (function(idx) {
+      setTimeout(function() {
+        spawnFloatingStar(rect.x - 16 + (idx - 1) * 30, rect.y - 20);
+      }, idx * 150);
+    })(i);
+  }
+
+  // Update prompt
+  var prompts = ['好叻呀！🌟', '太犀利啦！💪', '勁呀！🎉', '好棒！✨', '你好叻！🏆'];
+  document.getElementById('cardPrompt').textContent = prompts[Math.floor(Math.random() * prompts.length)];
+
+  updateProgressDots();
+
+  // Next word after delay
+  setTimeout(function() {
+    state.currentIndex++;
+    showCurrentWord();
+  }, 1200);
+}
+
+// ============ CELEBRATION ============
+function showCelebration() {
+  playCelebSound();
+  spawnConfetti();
+
+  var cat = state.currentCategory;
+  var total = WORDS[cat].length;
+  var earned = state.stars[cat];
+
+  var starsHtml = '';
+  for (var i = 0; i < earned; i++) { starsHtml += '⭐'; }
+  document.getElementById('celebStarsDisplay').textContent = starsHtml || '🌟';
+
+  if (earned === total) {
+    document.getElementById('celebTitle').textContent = '全部完成！';
+    var catLabels = { kh: 'Kh', w: 'W', s: 'S', kw: 'Kw' };
+    document.getElementById('celebMsg').textContent = '你已經學識晒所有 ' + catLabels[cat] + ' 聲母嘅字啦！繼續加油！';
+  } else {
+    document.getElementById('celebTitle').textContent = '好叻呀！';
+    document.getElementById('celebMsg').textContent = '你攞到 ' + earned + ' 粒星！想唔想再試下攞滿分？';
+  }
+
+  showScreen('celebration');
+  updateCategoryStars();
+}
+
+// ============ EVENT LISTENERS ============
+document.getElementById('btnStart').addEventListener('click', function() {
+  playTapSound();
+  updateCategoryStars();
+  showScreen('categories');
+});
+
+document.getElementById('catKh').addEventListener('click', function() {
+  playTapSound();
+  startCategory('kh');
+});
+
+document.getElementById('catW').addEventListener('click', function() {
+  playTapSound();
+  startCategory('w');
+});
+
+document.getElementById('catS').addEventListener('click', function() {
+  playTapSound();
+  startCategory('s');
+});
+
+document.getElementById('catKw').addEventListener('click', function() {
+  playTapSound();
+  startCategory('kw');
+});
+
+document.getElementById('btnBackFromCat').addEventListener('click', function() {
+  playTapSound();
+  showScreen('welcome');
+});
+
+document.getElementById('btnBackFromGame').addEventListener('click', function() {
+  playTapSound();
+  updateCategoryStars();
+  showScreen('categories');
+});
+
+// Listen button - speak the word
+document.getElementById('btnListen').addEventListener('click', function() {
+  if (state.currentIndex >= state.wordOrder.length) return;
+  var wordIdx = state.wordOrder[state.currentIndex];
+  var word = WORDS[state.currentCategory][wordIdx];
+  speakCantonese(word.speakText || word.char);
+});
+
+// Card tap - also speak
+document.getElementById('wordCard').addEventListener('click', function() {
+  if (state.currentIndex >= state.wordOrder.length) return;
+  var wordIdx = state.wordOrder[state.currentIndex];
+  var word = WORDS[state.currentCategory][wordIdx];
+  speakCantonese(word.speakText || word.char);
+});
+
+// Done button
+document.getElementById('btnDone').addEventListener('click', function(e) {
+  if (state.currentIndex >= state.wordOrder.length) return;
+  markCurrentDone(e);
+});
+
+// Repeat button
+document.getElementById('btnRepeat').addEventListener('click', function() {
+  if (state.currentIndex >= state.wordOrder.length) return;
+  var wordIdx = state.wordOrder[state.currentIndex];
+  var word = WORDS[state.currentCategory][wordIdx];
+  speakCantonese(word.speakText || word.char);
+  document.getElementById('cardPrompt').textContent = '👄 再讀一次！';
+});
+
+// Celebration - play again
+document.getElementById('btnAgain').addEventListener('click', function() {
+  playTapSound();
+  updateCategoryStars();
+  showScreen('categories');
+});
+
+</script>
+</body>
+</html>
